@@ -17,4 +17,6 @@
     // "stacktrace": false                      /* Disable stacktrace compilation. Value: [ true | false ]. Default: false */
   },
   "nodeOptions": {
-    // "maxOldSpaceSize": 4096                  /* Enable nodeOptions m
+    // "maxOldSpaceSize": 4096                  /* Enable nodeOptions maxOldSpaceSize compilation. Unit M. Used for the daemon process */
+  }
+}
