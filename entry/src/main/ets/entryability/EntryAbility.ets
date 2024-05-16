@@ -32,7 +32,7 @@ export default class EntryAbility extends UIAbility {
       await win.showWindow()
       win.setUIContent("pages/Start/Start")
     }
-    windowStage.loadContent('pages/Index');
+    windowStage.loadContent('pages/Login/Login');
   }
 
   onWindowStageDestroy(): void {
