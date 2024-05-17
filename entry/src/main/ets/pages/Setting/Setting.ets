@@ -1,10 +1,11 @@
-import { HmCard, HmCardItem } from '@hm/basic'
+import { HmCard, HmCardItem, HmNavBar } from '@hm/basic'
 
 @Entry
 @Component
 struct Setting {
   build() {
     Column() {
+      HmNavBar({ title: '系统设置' })
       HmCard() {
         HmCardItem({ leftTitle: '换绑手机', rightText: '' })
         HmCardItem({ leftTitle: '修改密码', rightText: '' })
