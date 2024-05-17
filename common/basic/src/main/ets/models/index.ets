@@ -1,5 +1,7 @@
 export * from './advert'
 
+export * from './tab'
+
 export class ResponseData<T> {
   code: number = 0
   msg: string = ""
