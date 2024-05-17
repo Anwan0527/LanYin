@@ -7,7 +7,8 @@ import { ResponseData } from '../models'
 // 请求工具 get/put/delete/post/patch
 // url 类型 参数
 // 任何对象都可以as object
-async function requestHttp<T>(url: string = "", method: http.RequestMethod = http.RequestMethod.GET, data?: object): Promise<T> {
+async function requestHttp<T>(url: string = "", method: http.RequestMethod = http.RequestMethod.GET,
+  data?: object): Promise<T> {
   // http需要创建一个请求对象
   const httpRequest = http.createHttp() // 创建一个请求对象- 如果你想用单例 那么请不要在请求时销毁
   let urlStr = BASE_URL + url // 基础地址拼接url地址
@@ -17,7 +18,7 @@ async function requestHttp<T>(url: string = "", method: http.RequestMethod = htt
   if (method === http.RequestMethod.GET) {
     // data参数都拼接到地址上  ?a=1&b=2&c=3
     if (data && Object.keys(data).length) {
-      urlStr += "?" + Object.keys(data).map(key => {
+      urlStr += "?" + Object.keys(data).filter(key =>!!data[key]).map(key => {
         return `${key}=${data[key]}`
       }).join("&")
     }
@@ -51,8 +52,7 @@ async function requestHttp<T>(url: string = "", method: http.RequestMethod = htt
       })
       // Hap har
       return Promise.reject(new Error("登录失效"))
-    }
-    else if (result.responseCode === 404) {
+    } else if (result.responseCode === 404) {
       promptAction.showToast({ message: '请求地址错误' })
       return Promise.reject(new Error("请求地址错误"))
     } else {
