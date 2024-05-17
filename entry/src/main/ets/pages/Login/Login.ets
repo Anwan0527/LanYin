@@ -1,4 +1,7 @@
-import { LoginFormModel } from '@hm/basic/Index'
+import { TOKEN_KEY, UserSettingClass } from '@hm/basic'
+import { login } from '../../api'
+import { router } from '@kit.ArkUI'
+import { LoginFormModel } from '../../models'
 
 @Entry
 @Component
@@ -9,6 +12,25 @@ struct Login {
     account: '',
     password: ''
   })
+
+  // 调用登录接口
+  async login() {
+    try {
+      this.showLoading = true
+      const token = await login(this.accountForm)
+      AppStorage.setOrCreate(TOKEN_KEY, token) // 写入全局状态
+      new UserSettingClass(getContext(this)).setUserToken(token) // 存入首选项
+      this.showLoading = false
+      router.replaceUrl({
+        url: 'pages/Index'
+      })
+    } catch (error) {
+
+    } finally {
+      this.showLoading = false
+    }
+
+  }
 
   // 通过校验
   getFormValidate() {
@@ -49,6 +71,11 @@ struct Login {
         .onChange(value => {
           this.accountForm.account = value
         })
+        .onSubmit(() => {
+          if (this.getFormValidate()) {
+            this.login()
+          }
+        })
 
       // 密码框
       TextInput({ placeholder: '请输入密码', text: this.accountForm.password })
@@ -57,7 +84,12 @@ struct Login {
         .showPasswordIcon(true)// 显示密码按钮
         .onChange((value) => {
           this.accountForm.password = value
-        }) // 显示密码按钮
+        })// 显示密码按钮
+        .onSubmit(() => {
+          if (this.getFormValidate()) {
+            this.login()
+          }
+        })
       // 登录按钮
       Button({ type: ButtonType.Capsule, stateEffect: this.getFormValidate() }) {
         Row() {
@@ -77,6 +109,9 @@ struct Login {
       .height(50)
       .margin({ top: 50 })
       .enabled(this.getFormValidate())
+      .onClick(() => {
+        this.login()
+      })
     }
     .padding({ left: 32, right: 32 })
     .margin({ top: 40 })
