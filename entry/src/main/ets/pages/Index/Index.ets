@@ -1,4 +1,5 @@
 import { TabClass } from '@hm/basic'
+import My from './My/My'
 
 @Entry
 @Component
@@ -43,7 +44,7 @@ struct Index {
           } else if (item.name === 'message') {
             Text("消息组件")
           } else {
-            Text("我的组件")
+            My()
           }
         }.tabBar(this.getTabBar(item))
       })
