@@ -1,12 +1,18 @@
 import { HmCard, HmCardItem } from '@hm/basic'
-import { UserInfo, UserInfoModel } from '../../../models'
-import { getUserInfo } from '../../../api'
+import { UserInfo, UserInfoModel, UserTaskInfo, UserTaskInfoModel, UserTaskInfoParamsModel } from '../../../models'
+import { getUserInfo, getUserTaskInfo } from '../../../api'
 
 @Preview
 @Component
 struct My {
   @State
   userInfo: UserInfoModel = new UserInfoModel({} as UserInfo)
+  @State
+  userTaskInfo: UserTaskInfoModel = new UserTaskInfoModel({} as UserTaskInfo)
+  queryTaskParams: UserTaskInfoParamsModel = new UserTaskInfoParamsModel({
+    year: new Date().getFullYear().toString(),
+    month: (new Date().getMonth() + 1).toString()
+  })
   @Consume
   @Watch("getUserInfo")
   currentName: string
@@ -15,7 +21,12 @@ struct My {
   async getUserInfo() {
     if (this.currentName === 'my') {
       this.userInfo = await getUserInfo()
+      this.userTaskInfo = await getUserTaskInfo(this.queryTaskParams)
     }
+  }
+
+  async getUserTaskInfo() {
+    this.userTaskInfo = await getUserTaskInfo(this.queryTaskParams)
   }
 
   build() {
@@ -61,14 +72,18 @@ struct My {
         Text("- 本月任务 -").fontSize(14).fontColor($r('app.color.text_secondary')).lineHeight(20)
         Row() {
           Column() {
-            Text("1000").fontSize(18).fontColor($r('app.color.text_primary')).lineHeight(25).margin({
-              bottom: 17
-            })
+            Text(this.userTaskInfo.taskAmounts?.toString() || '')
+              .fontSize(18)
+              .fontColor($r('app.color.text_primary'))
+              .lineHeight(25)
+              .margin({
+                bottom: 17
+              })
             Text("任务总量").fontSize(12).fontColor($r('app.color.text_primary')).lineHeight(17)
           }.justifyContent(FlexAlign.SpaceAround).layoutWeight(1)
 
           Column() {
-            Text("1000")
+            Text(this.userTaskInfo.completedAmounts?.toString() || '')
               .fontSize(18)
               .fontColor($r('app.color.text_primary'))
               .lineHeight(25)
@@ -77,7 +92,7 @@ struct My {
           }.justifyContent(FlexAlign.SpaceAround).layoutWeight(1)
 
           Column() {
-            Text("1000")
+            Text(this.userTaskInfo.transportMileage?.toString() || '')
               .fontSize(18)
               .fontColor($r('app.color.text_primary'))
               .lineHeight(25)
