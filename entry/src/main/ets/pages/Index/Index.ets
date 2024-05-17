@@ -5,7 +5,10 @@ import My from './My/My'
 @Component
 struct Index {
   @State
+  @Watch("updateName")
   currentIndex: number = 0 // 当前激活项
+  @Provide
+  currentName: string = ""
   @State tabsData: TabClass[] = [{
     title: '任务',
     name: 'task',
@@ -19,6 +22,10 @@ struct Index {
     name: 'my',
     icon: $r("app.media.ic_tab_btn_mine_nor")
   }]
+
+  updateName() {
+    this.currentName = this.tabsData[this.currentIndex].name
+  }
 
   @Builder
   getTabBar(item: TabClass) {

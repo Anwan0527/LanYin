@@ -1,16 +1,33 @@
+import { HmCard, HmCardItem } from '@hm/basic'
+import { UserInfo, UserInfoModel } from '../../../models'
+import { getUserInfo } from '../../../api'
+
 @Preview
 @Component
 struct My {
+  @State
+  userInfo: UserInfoModel = new UserInfoModel({} as UserInfo)
+  @Consume
+  @Watch("getUserInfo")
+  currentName: string
+
+  //获取个人信息
+  async getUserInfo() {
+    if (this.currentName === 'my') {
+      this.userInfo = await getUserInfo()
+    }
+  }
+
   build() {
     Column() {
       // 基本信息
       Column() {
-        Image($r("app.media.ic_avatar_driver"))
+        Image(this.userInfo.avatar || $r("app.media.ic_avatar_driver"))
           .width(67)
           .height(67)
           .borderRadius(34.5)
           .backgroundColor($r('app.color.white'))
-        Text("司机")
+        Text(this.userInfo.name)
           .fontSize(18)
           .fontWeight(600)
           .lineHeight(25)
@@ -19,8 +36,8 @@ struct My {
             bottom: 9
           })
           .fontColor($r('app.color.white'))
-        Text(`司机编号: 66666666`).fontSize(14).fontWeight(400).lineHeight(20).fontColor($r('app.color.white'))
-        Text(`手机号: 66666666`)
+        Text(this.userInfo.number).fontSize(14).fontWeight(400).lineHeight(20).fontColor($r('app.color.white'))
+        Text(`手机号: ${this.userInfo.phone}`)
           .fontSize(14)
           .fontWeight(400)
           .lineHeight(20)
@@ -82,40 +99,11 @@ struct My {
       .justifyContent(FlexAlign.SpaceBetween)
 
       // 信息列表
-      Column() {
-        Row() {
-          Text("车辆信息").fontSize(16).fontWeight(400).fontColor($r('app.color.text_primary'))
-          Image($r("app.media.ic_btn_more")).width(24).height(24)
-        }
-        .justifyContent(FlexAlign.SpaceBetween)
-        .alignItems(VerticalAlign.Center)
-        .border({ width: { bottom: 1 }, color: $r('app.color.background_page') })
-        .width('100%')
-        .height(60)
-
-        Row() {
-          Text("任务数据").fontSize(16).fontWeight(400).fontColor($r('app.color.text_primary'))
-          Image($r("app.media.ic_btn_more")).width(24).height(24)
-        }
-        .justifyContent(FlexAlign.SpaceBetween)
-        .alignItems(VerticalAlign.Center)
-        .border({ width: { bottom: 1 }, color: $r('app.color.background_page') })
-        .width('100%')
-        .height(60)
-
-        Row() {
-          Text("系统设置").fontSize(16).fontWeight(400).fontColor($r('app.color.text_primary'))
-          Image($r("app.media.ic_btn_more")).width(24).height(24)
-        }
-        .justifyContent(FlexAlign.SpaceBetween)
-        .alignItems(VerticalAlign.Center)
-        .width('100%')
-        .height(60)
+      HmCard() {
+        HmCardItem({ leftTitle: '车辆信息', rightText: '' })
+        HmCardItem({ leftTitle: '任务设置', rightText: '' })
+        HmCardItem({ leftTitle: '系统设置', rightText: '', showBottomBorder: false })
       }
-      .padding({ left: 17.5, right: 17.5 })
-      .backgroundColor($r('app.color.white'))
-      .margin({ left: 14.5, right: 14.5, bottom: 15 })
-      .borderRadius(8)
 
     }.width('100%').height('100%').backgroundColor($r('app.color.background_page')).borderRadius(8)
   }
