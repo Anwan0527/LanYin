@@ -1,7 +1,8 @@
-import { HmNavBar, CommonRouterParams } from '@hm/basic'
+import { HmNavBar, CommonRouterParams, HmToggleCard } from '@hm/basic'
 import { router } from '@kit.ArkUI'
 import { TaskDetailInfo, TaskDetailInfoModel } from '../../models'
 import { getTaskDetail } from '../../api'
+
 
 @Entry
 @Component
@@ -23,7 +24,9 @@ struct TaskDetail {
   build() {
     Column() {
       HmNavBar({ title: '任务详情' })
-      Text(JSON.stringify(this.taskDetailData))
+      HmToggleCard({ title: '基本信息' }) {
+        Text(JSON.stringify(this.taskDetailData))
+      }
     }.backgroundColor($r('app.color.background_page')).height('100%')
   }
 }
