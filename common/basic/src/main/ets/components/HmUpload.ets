@@ -1,17 +1,26 @@
 import { picker } from '@kit.CoreFileKit';
+import { ImageList } from '../models';
 
 @Component
 struct HmUpload {
   title: string = ""
   maxNumber: number = 3
+  @State
+  imgList: ImageList[] = []
 
   // 弹出相册选择器
-  selectImage() {
-    let photoPicker = new picker.PhotoViewPicker();
-    photoPicker.select({
+  async selectImage() {
+    const photoPicker = new picker.PhotoViewPicker()
+    const result = await photoPicker.select({
       MIMEType: picker.PhotoViewMIMETypes.IMAGE_TYPE,
-      maxSelectNumber: this.maxNumber
+      maxSelectNumber: this.maxNumber - this.imgList.length
     })
+    // 循环数组
+    if (result.photoUris?.length) {
+      this.imgList = this.imgList.concat(result.photoUris.map(url => {
+        return { url } as ImageList
+      }))
+    }
   }
 
   build() {
@@ -20,17 +29,35 @@ struct HmUpload {
         top: 16,
         bottom: 16
       })
-      Row() {
-        Image($r("app.media.ic_add_img")).width(30).height(30)
+      // 渲染图片
+      Grid() {
+        ForEach(this.imgList, (item: ImageList) => {
+          GridItem() {
+            Image(item.url)
+              .width(95)
+              .height(95)
+              .borderRadius(4)
+          }
+        })
+        if (this.imgList.length < this.maxNumber) {
+          GridItem() {
+            Row() {
+              Image($r("app.media.ic_add_img")).width(30).height(30)
+            }
+            .width(95)
+            .height(95)
+            .backgroundColor($r("app.color.upload_panel"))
+            .alignItems(VerticalAlign.Center)
+            .justifyContent(FlexAlign.Center)
+            .onClick(() => {
+              this.selectImage()
+            })
+          }
+        }
       }
-      .width(95)
-      .height(95)
-      .backgroundColor('#F2F2F2')
-      .alignItems(VerticalAlign.Center)
-      .justifyContent(FlexAlign.Center)
-      .onClick(() => {
-        this.selectImage()
-      })
+      .height(Math.ceil(this.maxNumber / 3) * 105)
+      .columnsTemplate("1fr 1fr 1fr")
+      .columnsGap(10)
     }.alignItems(HorizontalAlign.Start).width('100%')
   }
 }
