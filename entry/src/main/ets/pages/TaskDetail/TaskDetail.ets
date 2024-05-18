@@ -1,4 +1,4 @@
-import { HmNavBar, CommonRouterParams, HmToggleCard, HmUpload } from '@hm/basic'
+import { HmNavBar, CommonRouterParams, HmToggleCard, HmUpload, HmSkeleton } from '@hm/basic'
 import { router } from '@kit.ArkUI'
 import { TaskDetailInfo, TaskDetailInfoModel } from '../../models'
 import { getTaskDetail } from '../../api'
@@ -153,30 +153,65 @@ struct TaskDetail {
     HmUpload({ title: '请拍照上传货品照片' })
   }
 
+  // 底部按钮结构
+  @Builder
+  getBottomBtn() {
+    //已完成不显示任何按钮
+    Row() {
+      Button("延迟收货", { type: ButtonType.Capsule })
+        .backgroundColor($r('app.color.btn_gray'))
+        .fontColor($r('app.color.text_primary'))
+        .fontSize(16)
+        .height(50)
+        .width(125)
+      Button("提货", { type: ButtonType.Capsule })
+        .backgroundColor($r('app.color.primary_disabled'))
+        .fontColor($r('app.color.white'))
+        .height(50)
+        .flexGrow(1)
+        .margin({ left: 13 })
+    }
+    .width('100%')
+    .padding({ left: 15, right: 15 })
+    .height(70)
+    .justifyContent(FlexAlign.SpaceBetween)
+    .alignItems(VerticalAlign.Center)
+    .backgroundColor($r('app.color.white'))
+  }
+
   build() {
     Column() {
-      HmNavBar({ title: '任务详情' })
-      Scroll(this.scroller) {
-        Column() {
-          HmToggleCard({ title: '基本信息' }) {
-            this.getBaseContent()
-          }
+      if (this.taskDetailData.id) {
+        HmNavBar({ title: '任务详情' })
+        Scroll(this.scroller) {
+          Column() {
+            HmToggleCard({ title: '基本信息' }) {
+              this.getBaseContent()
+            }
 
-          HmToggleCard({ title: '车辆司机信息' }) {
-            this.getDriverContent()
-          }
+            HmToggleCard({ title: '车辆司机信息' }) {
+              this.getDriverContent()
+            }
 
-          HmToggleCard({ title: '运输路线' }) {
-            this.getTransLineContent()
-          }
+            HmToggleCard({ title: '运输路线' }) {
+              this.getTransLineContent()
+            }
 
-          HmToggleCard({ title: '提货信息' }) {
-            this.getPickUpContent()
+            HmToggleCard({ title: '提货信息' }) {
+              this.getPickUpContent()
+            }
           }
-        }.padding({
-          bottom: 120
+        }
+        .padding({
+          bottom: 20
         })
+        .layoutWeight(1)
+
+        this.getBottomBtn() // 底部按钮结构
+      } else {
+        HmSkeleton({ count: 4, showAvatar: false })
       }
+
     }.backgroundColor($r('app.color.background_page')).height('100%')
   }
 }
