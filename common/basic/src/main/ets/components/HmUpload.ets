@@ -1,6 +1,18 @@
+import { picker } from '@kit.CoreFileKit';
+
 @Component
 struct HmUpload {
   title: string = ""
+  maxNumber: number = 3
+
+  // 弹出相册选择器
+  selectImage() {
+    let photoPicker = new picker.PhotoViewPicker();
+    photoPicker.select({
+      MIMEType: picker.PhotoViewMIMETypes.IMAGE_TYPE,
+      maxSelectNumber: this.maxNumber
+    })
+  }
 
   build() {
     Column() {
@@ -16,6 +28,9 @@ struct HmUpload {
       .backgroundColor('#F2F2F2')
       .alignItems(VerticalAlign.Center)
       .justifyContent(FlexAlign.Center)
+      .onClick(() => {
+        this.selectImage()
+      })
     }.alignItems(HorizontalAlign.Start).width('100%')
   }
 }
