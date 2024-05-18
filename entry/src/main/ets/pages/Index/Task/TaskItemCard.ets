@@ -1,4 +1,5 @@
 import { TaskInfoItem, TaskInfoItemModel } from '../../../models'
+import { router } from '@kit.ArkUI'
 
 @Preview
 @Component
@@ -11,6 +12,18 @@ struct TaskItemCard {
       return true
     }
     return false
+  }
+
+  // 去提货
+  toPickUp() {
+    if (this.getBtnEnable()) {
+      router.pushUrl({
+        url: 'pages/TaskDetail/TaskDetail',
+        params: {
+          id: this.taskItemData.id
+        }
+      })
+    }
   }
 
   build() {
@@ -74,7 +87,9 @@ struct TaskItemCard {
           .fontSize(14)
           .height(32)
           .enabled(this.getBtnEnable())
-
+          .onClick(() => {
+            this.toPickUp()
+          })
       }.justifyContent(FlexAlign.SpaceBetween).width('100%')
     }
     .margin({ left: 15, right: 15, top: 15 })
