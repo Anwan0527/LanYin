@@ -1,4 +1,4 @@
-import { HmNavBar, CommonRouterParams, HmToggleCard } from '@hm/basic'
+import { HmNavBar, CommonRouterParams, HmToggleCard, HmUpload } from '@hm/basic'
 import { router } from '@kit.ArkUI'
 import { TaskDetailInfo, TaskDetailInfoModel } from '../../models'
 import { getTaskDetail } from '../../api'
@@ -146,6 +146,13 @@ struct TaskDetail {
     this.taskDetailData = await getTaskDetail(id)
   }
 
+  // 提货信息内容
+  @Builder
+  getPickUpContent() {
+    HmUpload({ title: '请拍照上传回单凭证' })
+    HmUpload({ title: '请拍照上传货品照片' })
+  }
+
   build() {
     Column() {
       HmNavBar({ title: '任务详情' })
@@ -162,10 +169,13 @@ struct TaskDetail {
           HmToggleCard({ title: '运输路线' }) {
             this.getTransLineContent()
           }
+
+          HmToggleCard({ title: '提货信息' }) {
+            this.getPickUpContent()
+          }
         }.padding({
-          bottom: 20
+          bottom: 120
         })
-        .layoutWeight(1)
       }
     }.backgroundColor($r('app.color.background_page')).height('100%')
   }
