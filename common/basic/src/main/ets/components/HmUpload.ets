@@ -7,7 +7,7 @@ struct HmUpload {
   title: string = ""
   maxNumber: number = 3
   index: number = -1
-  @State
+  @Prop
   imgList: ImageList[] = []
   preview: CustomDialogController = new CustomDialogController({
     builder: HmPreview({
@@ -16,6 +16,8 @@ struct HmUpload {
     }),
     customStyle: true, // 自定义样式
   })
+  onListChange: (list: ImageList[]) => void = () => {
+  }
 
   // 弹出相册选择器
   async selectImage() {
@@ -29,6 +31,7 @@ struct HmUpload {
       this.imgList = this.imgList.concat(result.photoUris.map(url => {
         return { url } as ImageList
       }))
+      this.onListChange(this.imgList)
     }
   }
 
