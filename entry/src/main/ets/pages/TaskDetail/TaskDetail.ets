@@ -1,4 +1,13 @@
-import { HmNavBar, CommonRouterParams, HmToggleCard, HmUpload, HmSkeleton, ImageList, UploadFile } from '@hm/basic'
+import {
+  HmNavBar,
+  CommonRouterParams,
+  HmToggleCard,
+  HmUpload,
+  HmSkeleton,
+  ImageList,
+  UploadFile,
+  HmLoading
+} from '@hm/basic'
 import { promptAction, router } from '@kit.ArkUI'
 import { PickUpParamsModel, TaskDetailInfo, TaskDetailInfoModel } from '../../models'
 import { getTaskDetail, pickUp } from '../../api'
@@ -12,6 +21,10 @@ class BaseBuilderClass {
 @Entry
 @Component
 struct TaskDetail {
+  loading: CustomDialogController = new CustomDialogController({
+    builder: HmLoading(),
+    customStyle: true
+  })
   @State
   taskDetailData: TaskDetailInfoModel = new TaskDetailInfoModel({} as TaskDetailInfo)
   scroller: Scroller = new Scroller() // 滚动
@@ -143,7 +156,9 @@ struct TaskDetail {
   }
 
   async getTaskDetail(id: string) {
+    this.loading.open()
     this.taskDetailData = await getTaskDetail(id)
+    this.loading.close()
   }
 
   // 提货信息内容
@@ -176,6 +191,7 @@ struct TaskDetail {
 
   // 去提货
   async btnPickUp() {
+    this.loading.open()
     const cargoPickUpPictureList = await UploadFile(this.taskDetailData.cargoPickUpPictureList) // 传入提货凭证
     const cargoPictureList = await UploadFile(this.taskDetailData.cargoPictureList) // 货品照片
     // 提货操作
@@ -189,6 +205,7 @@ struct TaskDetail {
     this.getTaskDetail(this.taskDetailData.id) // 重新拉取数据
 
     this.scroller.scrollEdge(Edge.Top)
+    this.loading.close()
     // 滚动到顶部
     promptAction.showToast({ message: '提货成功' })
 

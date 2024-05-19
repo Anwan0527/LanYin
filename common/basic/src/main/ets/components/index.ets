@@ -15,3 +15,5 @@ export * from './HmToggleCard'
 export * from './HmUpload'
 
 export * from './HmPreview'
+
+export * from './HmLoading'
