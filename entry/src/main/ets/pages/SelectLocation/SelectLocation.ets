@@ -1,26 +1,56 @@
 import { HmNavBar, HmCard, HmCardItem } from '@hm/basic'
 import { MapComponent } from '@hms.core.map.MapComponent'
-import geoLocationManager from '@ohos.geoLocationManager';
+import { geoLocationManager } from '@kit.LocationKit'
+import { map, mapCommon, site } from "@kit.MapKit"
+import { router } from '@kit.ArkUI'
 
 @Entry
 @Component
 struct SelectLocation {
-  aboutToAppear() {
-    this.getLocation()
-  }
+  @State
+  list: SiteClass[] = []
+  mapController: map.MapComponentController = new map.MapComponentController()
 
   async getLocation() {
-    try {
-      const result = await geoLocationManager.getCurrentLocation()
-      AlertDialog.show({
-        message: JSON.stringify(result)
-      })
-    } catch (error) {
-      AlertDialog.show({
-        message: error.message
-      })
-    }
+    const rightResult = await geoLocationManager.getCurrentLocation()
 
+
+    // let wgs84Position: mapCommon.LatLng = {
+    //   longitude: result.longitude,
+    //   latitude: result.latitude
+    // }
+    // // 正确的坐标
+    // const rightResult = await map.convertCoordinate(mapCommon.CoordinateType.WGS84, mapCommon.CoordinateType.GCJ02, wgs84Position)
+    // 获取位置经纬WGS84
+    // 花瓣地图 GCJ02
+    // 地图上 将可相机挪动到具体的位置
+    this.mapController.moveCamera(map.newCameraPosition({
+      target: {
+        longitude: rightResult.longitude,
+        latitude: rightResult.latitude
+      },
+      zoom: 16
+    }))
+    // 添加一个标记
+    this.mapController.addPointAnnotation({
+      position: {
+        longitude: rightResult.longitude,
+        latitude: rightResult.latitude
+      },
+      titles: [{
+        content: '您当前的位置'
+      }]
+    })
+    const res = await site.nearbySearch({
+      location: {
+        longitude: rightResult.longitude,
+        latitude: rightResult.latitude
+      },
+      pageSize: 4,
+      pageIndex: 1,
+      radius: 50
+    })
+    this.list = res.sites?.slice(0, 4) as SiteClass[] // 只拿4条数据
   }
 
   build() {
@@ -38,17 +68,30 @@ struct SelectLocation {
               zoom: 10
             }
           },
-          mapCallback: () => {
+          mapCallback: (err, controller) => {
+            if (!err) {
+              this.mapController = controller // 此时此刻 地图渲染完毕 地图控制器也有值了
+              this.getLocation() // 获取定位
+            }
           }
         })
           .width('100%')
           .height('100%')
         Column() {
           HmCard() {
-            HmCardItem({ leftTitle: '回龙观街道', rightText: '100m以内' })
-            HmCardItem({ leftTitle: '金燕龙科研楼', rightText: '100m以内' })
-            HmCardItem({ leftTitle: '春野画室', rightText: '100m以内' })
-            HmCardItem({ leftTitle: '光滑时代(金艳龙科研楼店)', rightText: '100m以内' })
+            ForEach(this.list, (item: SiteClass) => {
+              HmCardItem({ leftTitle: item.name, rightText: `${item.distance}m` })
+                .onClick(() => {
+                  router.back({
+                    url: "pages/ExceptionReport/ExceptionReport",
+                    params: {
+                      location: item.name
+                    }
+                  })
+                })
+            })
+
+
           }
         }
         .padding({
@@ -58,4 +101,9 @@ struct SelectLocation {
     }
     .height('100%').backgroundColor($r('app.color.background_page'))
   }
+}
+
+class SiteClass {
+  name: string = ""
+  distance: number = 0
 }
