@@ -6,6 +6,8 @@ import TaskItemCard from './TaskItemCard'
 // 待提货
 @Component
 struct TaskList {
+  @State
+  reset: boolean = false // 用于控制重置状态
   loading: CustomDialogController = new CustomDialogController({
     builder: HmLoading({
       title: '搜索查询中'
@@ -107,12 +109,19 @@ struct TaskList {
               }
             })
           })
-        Button("筛选")
+        Button(this.reset ? "重置" : "筛选")
           .backgroundColor(this.getSearchEnable() ? $r('app.color.primary') : $r('app.color.primary_disabled'))
           .height(32)
           .width(60)
           .enabled(this.getSearchEnable())
           .onClick(async () => {
+            if (this.reset) {
+              this.queryParams.startTime = ''
+              this.queryParams.endTime = ''
+              this.reset = false
+            } else {
+              this.reset = true
+            }
             this.loading.open()
             this.allPage = 1
             this.queryParams.page = 1
