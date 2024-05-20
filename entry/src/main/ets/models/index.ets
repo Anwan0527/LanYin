@@ -15,3 +15,5 @@ export * from './deliver'
 export * from './delay'
 
 export * from './exception'
+
+export * from './message'

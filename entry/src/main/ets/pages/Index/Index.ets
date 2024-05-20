@@ -1,6 +1,7 @@
 import { TabClass } from '@hm/basic'
 import My from './My/My'
 import TaskTabs from './Task/TaskTabs'
+import Message from '../Message/Message'
 
 @Entry
 @Component
@@ -50,7 +51,7 @@ struct Index {
           if (item.name === 'task') {
             TaskTabs()
           } else if (item.name === 'message') {
-            Text("消息组件")
+            Message()
           } else {
             My()
           }
