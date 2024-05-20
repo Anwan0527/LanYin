@@ -9,8 +9,14 @@ import {
   HmLoading
 } from '@hm/basic'
 import { promptAction, router } from '@kit.ArkUI'
-import { PickUpParamsModel, TaskDetailInfo, TaskDetailInfoModel, TaskTypeEnum } from '../../models'
-import { getTaskDetail, pickUp } from '../../api'
+import {
+  DeliverParamsTypeModel,
+  PickUpParamsModel,
+  TaskDetailInfo,
+  TaskDetailInfoModel,
+  TaskTypeEnum
+} from '../../models'
+import { deliver, getTaskDetail, pickUp } from '../../api'
 
 class BaseBuilderClass {
   title: string = ""
@@ -213,6 +219,14 @@ struct TaskDetail {
     this.taskDetailData.cargoPictureList.every(item =>!!item.url)
   }
 
+  // 获取交货状态
+  getDeliverState() {
+    return this.taskDetailData.deliverPictureList?.length > 0 &&
+      this.taskDetailData.certificatePictureList?.length > 0
+      && this.taskDetailData.deliverPictureList.every(item =>!!item.url)
+      && this.taskDetailData.certificatePictureList.every(item =>!!item.url)
+  }
+
   // 去提货
   async btnPickUp() {
     this.loading.open()
@@ -233,6 +247,24 @@ struct TaskDetail {
     // 滚动到顶部
     promptAction.showToast({ message: '提货成功' })
 
+  }
+
+  // 交货方法
+  async btnDeliver() {
+    this.loading.open()
+    this.taskDetailData.deliverPictureList = await UploadFile(this.taskDetailData.deliverPictureList)
+    this.taskDetailData.certificatePictureList = await UploadFile(this.taskDetailData.certificatePictureList)
+    await deliver(new DeliverParamsTypeModel({
+      id: this.taskDetailData.id,
+      certificatePictureList: this.taskDetailData.certificatePictureList,
+      deliverPictureList: this.taskDetailData.deliverPictureList
+    }))
+    promptAction.showToast({
+      message: '交货成功'
+    })
+    // 重新加载一下
+    this.getTaskDetail(this.taskDetailData.id)
+    this.loading.close()
   }
 
   // 底部按钮结构
@@ -264,12 +296,16 @@ struct TaskDetail {
           .fontSize(16)
           .height(50)
           .width(125)
-        Button("交货", { type: ButtonType.Capsule })
-          .backgroundColor($r('app.color.primary'))
+        Button("交付", { type: ButtonType.Capsule })
+          .backgroundColor(this.getDeliverState() ? $r('app.color.primary') : $r('app.color.primary_disabled'))
           .fontColor($r('app.color.white'))
           .height(50)
           .flexGrow(1)
+          .enabled(this.getDeliverState())
           .margin({ left: 13 })
+          .onClick(() => {
+            this.btnDeliver()
+          })
 
       } else if (this.taskDetailData.status === TaskTypeEnum.Delivered) {
         Row() {
