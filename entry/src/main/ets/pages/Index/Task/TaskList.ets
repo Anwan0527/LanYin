@@ -70,9 +70,27 @@ struct TaskList {
     Column() {
       Row() {
         Search({ placeholder: '请输入任务编号' }).backgroundColor($r('app.color.background_page')).height(32)
+          .onSubmit(async value => {
+            this.loading.open()
+            this.queryParams.page = 1
+            if (value) {
+              this.queryParams.startTime = ''
+              this.queryParams.endTime = ''
+              this.reset = false
+              this.allPage = 0 // 有值意味着只有一条 因为是根据单号传的，所以不让它继续往后查 否则会重复
+              this.queryParams.transportTaskId = isNaN(parseInt(value)) ? "0" : value
+            } else {
+              this.allPage = 1 // 没值意味着查不到 重新加载
+              this.queryParams.transportTaskId = ""
+            }
+            const result = await getTaskList(this.queryParams)
+            this.taskListData = result.items || []
+            this.loading.close()
+          })
       }
       .justifyContent(FlexAlign.Center)
       .padding({ left: 15, right: 15, bottom: 5 })
+
 
       Row() {
         // 完成搜索页需要测试点击之后键盘和弹层同时弹出的情况
@@ -89,6 +107,7 @@ struct TaskList {
               onAccept: (value: DatePickerResult) => {
                 this.queryParams.startTime =
                   `${value.year}-${this.addZero(value.month! + 1)}-${this.addZero(value.day)}`
+
               }
             })
           })
@@ -106,6 +125,7 @@ struct TaskList {
               selected: new Date(),
               onAccept: (value: DatePickerResult) => {
                 this.queryParams.endTime = `${value.year}-${this.addZero(value.month! + 1)}-${this.addZero(value.day)}`
+
               }
             })
           })
@@ -113,7 +133,6 @@ struct TaskList {
           .backgroundColor(this.getSearchEnable() ? $r('app.color.primary') : $r('app.color.primary_disabled'))
           .height(32)
           .width(60)
-          .enabled(this.getSearchEnable())
           .onClick(async () => {
             if (this.reset) {
               this.queryParams.startTime = ''
