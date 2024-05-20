@@ -1,6 +1,7 @@
 import { HmNavBar, HmCard, HmCardItem, CommonRouterParams, DateFormat } from '@hm/basic'
 import { DelayParamsType, DelayParamsTypeModel } from '../../models'
-import { router } from '@kit.ArkUI'
+import { promptAction, router } from '@kit.ArkUI'
+import { delay } from '../../api'
 
 @Entry
 @Component
@@ -22,6 +23,14 @@ struct Delay {
 
   getBtnEnable() {
     return !!(this.delayForm.id && this.delayForm.delayReason && this.delayForm.delayTime)
+  }
+
+  async delay() {
+    await delay(this.delayForm)
+    promptAction.showToast({
+      message: '延迟收货成功'
+    })
+    router.back()
   }
 
   build() {
@@ -72,7 +81,7 @@ struct Delay {
             )
             .enabled(this.getBtnEnable())
             .onClick(() => {
-
+              this.delay()
             })
         }.justifyContent(FlexAlign.Center).padding({
           top: 20,
