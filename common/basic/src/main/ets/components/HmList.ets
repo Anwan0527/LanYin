@@ -3,10 +3,18 @@ import { ListDataSource } from '../models'
 import vibrator from '@ohos.vibrator';
 import { AVPlayerClass } from '../utils';
 
+// 加载的状态
+export enum PullEnum {
+  none = 0, // 正常状态
+  show = 1, // 显示下拉状态
+  loading = 2, // 下拉刷新中
+  waiting = 3 // 等待下拉刷新完成
+}
+
 @Component
 struct HmList {
   @State
-  refreshStatus: RefreshStatus = RefreshStatus.Inactive
+  refreshStatus: PullEnum = PullEnum.none
   @State
   refreshIng: boolean = false // 控制下拉刷新的变量
   // 传入数据的数组 根据数组进行渲染
@@ -23,6 +31,10 @@ struct HmList {
   @BuilderParam
   renderItem: (item: object) => void // 由调用者传入 由HmList调用 传入每一个项的数据
   lazyDataSource: ListDataSource = new ListDataSource()
+  @State
+  translateY: number = 0 // 列表偏移量
+  refreshLimit: number = 50 // 阈值
+  startY: number = 0 // 实际偏移量
   // 上拉加载的方法
   onLoad: () => void = () => {
   } // 由调用者传入
@@ -30,40 +42,51 @@ struct HmList {
   onRefresh: () => void = () => {
   } // 下拉刷新的方法
 
+  //阻尼函数
+  ease(distance: number) {
+    const damp = 0.2 // 阻尼系数
+    if (distance > this.refreshLimit) {
+      return this.refreshLimit + (distance - this.refreshLimit) * damp
+    }
+    return distance
+  }
+
   // 更新数据
   updateDataSource() {
     this.lazyDataSource.reloadData(this.dataSource)
   }
 
-  // 动态生成文本
-  getStatusText() {
-    switch (this.refreshStatus) {
-      case RefreshStatus.Inactive:
-        return ""
-      case RefreshStatus.Drag:
-        return "继续下拉"
-      case RefreshStatus.OverDrag:
-        return "松手加载"
-      case RefreshStatus.Refresh:
-        return "加载中"
-    }
-    return ""
-  }
-
   @Builder
-  getRefreshDisPlay() {
-    Row({ space: 10 }) {
-      LoadingProgress()
-        .color($r('app.color.primary'))
-        .width(40)
-        .height(40)
-      Text(this.getStatusText())
-        .fontColor($r('app.color.text_secondary'))
+  getRefreshDisplay() {
+    Row() {
+      LoadingProgress().color($r('app.color.primary')).width(40).height(40).animation({
+        duration: 100
+      })
+      Text(this.getRefreshText(this.refreshStatus))
         .fontSize(14)
+        .fontColor($r('app.color.text_secondary'))
+        .margin({
+          left: 10
+        })
     }
     .justifyContent(FlexAlign.Center)
-    .height(50)
     .width('100%')
+    .height(50)
+  }
+
+  // 动态生成文本
+  getRefreshText(status: PullEnum) {
+    switch (status) {
+      case PullEnum.none:
+        return ""
+      case PullEnum.show:
+        return "继续下拉"
+      case PullEnum.loading:
+        return "松手加载"
+      case PullEnum.waiting:
+        return "加载中"
+    }
+
   }
 
   @Builder
@@ -91,7 +114,10 @@ struct HmList {
   }
 
   build() {
-    Refresh({ refreshing: $$this.refreshIng, builder: this.getRefreshDisPlay() }) {
+    Stack({ alignContent: Alignment.Top }) {
+      if (this.refreshStatus !== PullEnum.none) {
+        this.getRefreshDisplay()
+      }
       List() {
         LazyForEach(this.lazyDataSource, (item: object) => {
           // 每一项的结构的UI内容不是由列表决定 而由使用者决定
@@ -105,6 +131,9 @@ struct HmList {
           this.getBottomDisplay()
         }
       }
+      .translate({
+        y: this.translateY // 记录偏移量
+      })
       .onReachEnd(async () => {
         // 实现上拉加载
         // 需要一个标记 是否已经加载完所有数据
@@ -115,21 +144,53 @@ struct HmList {
           this.loading = false // 打开阀门
         }
       })
-
+      .onTouch(async (event?: TouchEvent) => {
+        if (!event) {
+          return;
+        }
+        switch (event.type) {
+          case TouchType.Down:
+            this.startY = event.touches[0].y // 鼠标按下时 记录起始的y坐标
+            break
+          case TouchType.Move:
+            const offset = this.ease(event.touches[0].y - this.startY) // 移动后的偏移量
+            if (offset > 0) {
+              // 只有大于0的情况下 才位移 否则不管
+              this.translateY = this.ease(offset) // 设置阻尼
+            }
+          // 如果确认往下拉了 但是小于设定的阈值 状态为show
+            if (this.translateY > 0 && this.translateY < this.refreshLimit) {
+              this.refreshStatus = PullEnum.show;
+            }
+            // 如果超过阈值 就设置为加载状态
+            else if (this.translateY > this.refreshLimit) {
+              this.refreshStatus = PullEnum.loading;
+            } else {
+              // 否则就是往上拉了 往上拉是没有加载进度
+              this.refreshStatus = PullEnum.none
+            }
+            break;
+          case TouchType.Up:
+          // 如果松手时 是加载状态 表示是去加载 就开始加载
+            if (this.refreshStatus === PullEnum.loading) {
+              // 将状态设置为等待 表示等待它加载完毕
+              this.refreshStatus = PullEnum.waiting
+              await this.onRefresh()
+              vibrator.startVibration({ duration: 300, type: 'time' }, { id: 0, usage: 'touch' }) // 震动
+              AVPlayerClass.playAudio("success.wav", getContext(this))
+            }
+          // 松手之后，一切应该恢复正常
+          // 恢复正常
+            animateTo({ duration: 300 }, () => {
+              this.translateY = 0
+              this.refreshStatus = PullEnum.none;
+            })
+            break;
+          default:
+            break;
+        }
+      })
     }
-    .onStateChange(async (value) => {
-      this.refreshStatus = value // 实现下拉刷新
-      if (value === RefreshStatus.Refresh) {
-        // 松手加载
-        await this.onRefresh() // 调用刷新方法
-        this.refreshIng = false // 关闭下拉的动画效果
-        this.loading = false // 关闭上拉刷新的loading
-        // 下拉刷新意味着所有数据全都不要 重新来过
-        vibrator.startVibration({ duration: 300, type: 'time' }, { id: 0, usage: 'touch' })
-        AVPlayerClass.playAudio("success.wav", getContext(this))
-      }
-    })
-
   }
 }
 
