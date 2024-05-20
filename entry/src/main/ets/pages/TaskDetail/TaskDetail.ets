@@ -9,7 +9,7 @@ import {
   HmLoading
 } from '@hm/basic'
 import { promptAction, router } from '@kit.ArkUI'
-import { PickUpParamsModel, TaskDetailInfo, TaskDetailInfoModel } from '../../models'
+import { PickUpParamsModel, TaskDetailInfo, TaskDetailInfoModel, TaskTypeEnum } from '../../models'
 import { getTaskDetail, pickUp } from '../../api'
 
 class BaseBuilderClass {
@@ -162,22 +162,45 @@ struct TaskDetail {
   }
 
   // 提货信息内容
-  // 专门负责提货信息的结构
+  // 专门负责交货信息的结构
+  @Builder
+  getDeliverContent() {
+    HmUpload({
+      title: '请拍照上传交货货品凭证',
+      imgList: this.taskDetailData.deliverPictureList || [],
+      onListChange: (list: ImageList[]) => {
+        this.taskDetailData.deliverPictureList = list
+      }
+    })
+    HmUpload({
+      title: '请拍照上传交货货品照片',
+      imgList: this.taskDetailData.certificatePictureList || [],
+      onListChange: (list: ImageList[]) => {
+        this.taskDetailData.certificatePictureList = list
+      }
+    })
+  }
+
+  // 提货信息
   @Builder
   getPickUpContent() {
+    // @Link修饰符 修饰只能是一层数据
     HmUpload({
-      title: '请拍照上传货品凭证',
-      imgList: this.taskDetailData.cargoPickUpPictureList || [],
+      title: '请拍照上传回单凭证',
+      imgList: this.taskDetailData.cargoPickUpPictureList || [], // 父组件给子组件传
       onListChange: (list: ImageList[]) => {
-        this.taskDetailData.cargoPickUpPictureList = list
-      }
+        this.taskDetailData.cargoPickUpPictureList = list // 子组件给父组件传
+      },
+      // canUpload: this.taskDetailData.status === TaskTypeEnum.Waiting  //todo 这里后续需要补上
     })
     HmUpload({
       title: '请拍照上传货品照片',
       imgList: this.taskDetailData.cargoPictureList || [],
       onListChange: (list: ImageList[]) => {
         this.taskDetailData.cargoPictureList = list
-      }
+      },
+      // canUpload: this.taskDetailData.status === TaskTypeEnum.Waiting   //todo 这里后续需要补上
+
     })
   }
 
@@ -216,22 +239,39 @@ struct TaskDetail {
   getBottomBtn() {
     //已完成不显示任何按钮
     Row() {
-      Button("延迟收货", { type: ButtonType.Capsule })
-        .backgroundColor($r('app.color.btn_gray'))
-        .fontColor($r('app.color.text_primary'))
-        .fontSize(16)
-        .height(50)
-        .width(125)
-      Button("提货", { type: ButtonType.Capsule })
-        .backgroundColor(this.getPickUpState() ? $r('app.color.primary') : $r('app.color.primary_disabled'))
-        .fontColor($r('app.color.white'))
-        .height(50)
-        .flexGrow(1)
-        .margin({ left: 13 })
-        .enabled(this.getPickUpState())
-        .onClick(() => {
-          this.btnPickUp()
-        })
+      if (this.taskDetailData.status === TaskTypeEnum.Waiting) {
+        Button("延迟收货", { type: ButtonType.Capsule })
+          .backgroundColor($r('app.color.btn_gray'))
+          .fontColor($r('app.color.text_primary'))
+          .fontSize(16)
+          .height(50)
+          .width(125)
+        Button("提货", { type: ButtonType.Capsule })
+          .backgroundColor($r('app.color.primary'))
+          .fontColor($r('app.color.white'))
+          .height(50)
+          .flexGrow(1)
+          .margin({ left: 13 })
+          .enabled(this.getPickUpState())
+          .onClick(() => {
+            this.btnPickUp()
+          })
+      } else if (this.taskDetailData.status === TaskTypeEnum.Line) {
+        Button("上报异常", { type: ButtonType.Capsule })
+          .backgroundColor($r('app.color.btn_gray'))
+          .fontColor($r('app.color.text_primary'))
+          .fontSize(16)
+          .height(50)
+          .width(125)
+        Button("交货", { type: ButtonType.Capsule })
+          .backgroundColor($r('app.color.primary'))
+          .fontColor($r('app.color.white'))
+          .height(50)
+          .flexGrow(1)
+          .margin({ left: 13 })
+
+      }
+
     }
     .width('100%')
     .padding({ left: 15, right: 15 })
@@ -259,8 +299,17 @@ struct TaskDetail {
               this.getTransLineContent()
             }
 
-            HmToggleCard({ title: '提货信息' }) {
-              this.getPickUpContent()
+            // 提货时显示提货照片
+            if (this.taskDetailData.status === TaskTypeEnum.Waiting) {
+              HmToggleCard({ title: '提货信息' }) {
+                this.getPickUpContent()
+              }
+            }
+            // 交货时显示交货照片
+            if (this.taskDetailData.status === TaskTypeEnum.Line) {
+              HmToggleCard({ title: '交货信息' }) {
+                this.getDeliverContent()
+              }
             }
           }
         }

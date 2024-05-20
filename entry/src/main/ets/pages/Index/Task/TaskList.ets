@@ -58,7 +58,7 @@ struct TaskList {
       finished: this.allPage < this.queryParams.page,
       finishText: '没啦没啦',
       loadingText: '拼命加载中'
-    })
+    }).height('100%')
   }
 }
 
