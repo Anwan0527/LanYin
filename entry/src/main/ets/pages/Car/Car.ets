@@ -16,9 +16,9 @@ struct Car {
 
   async getUserCarInfo() {
     this.userCarInfo = await getUserCarInfo()
-    promptAction.showToast({
-      message: JSON.stringify(this.userCarInfo, null, 2)
-    })
+    // promptAction.showToast({
+    //   message: JSON.stringify(this.userCarInfo, null, 2)
+    // })
   }
 
   @Builder
