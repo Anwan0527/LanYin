@@ -13,3 +13,5 @@ export * from './car_record'
 export * from './deliver'
 
 export * from './delay'
+
+export * from './exception'
