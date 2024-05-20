@@ -158,10 +158,12 @@ struct My {
           })
           HmCardItem({
             leftTitle: '系统设置',
-            rightText: "",
+            rightText: '',
             showBottomBorder: false,
             onRightClick: () => {
-              router.pushUrl({ url: 'pages/Settting/Setting' })
+              router.pushUrl({
+                url: 'pages/Setting/Setting'
+              })
             }
           })
         }
