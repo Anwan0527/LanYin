@@ -10,6 +10,7 @@
     "pages/ExceptionReport/ExceptionReport",
     "pages/ExceptionReport/ExceptionDetail",
     "pages/SelectLocation/SelectLocation",
-    "pages/Message/MessageDetail"
+    "pages/Message/MessageDetail",
+    "pages/Car/Car"
   ]
 }

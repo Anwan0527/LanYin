@@ -141,7 +141,13 @@ struct My {
         // 尾随闭包
         HmCard() {
           // 尾随闭包内容
-          HmCardItem({ leftTitle: '车辆信息', rightText: "" })
+          HmCardItem({
+            leftTitle: '车辆信息', rightText: '', onRightClick: () => {
+              router.pushUrl({
+                url: 'pages/Car/Car'
+              })
+            }
+          })
           HmCardItem({ leftTitle: '任务数据', rightText: "" })
           HmCardItem({
             leftTitle: '系统设置',
