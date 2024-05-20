@@ -18,6 +18,7 @@ import {
   TaskTypeEnum
 } from '../../models'
 import { deliver, getTaskDetail, pickUp } from '../../api'
+import { common } from '@kit.AbilityKit'
 
 class BaseBuilderClass {
   title: string = ""
@@ -113,13 +114,20 @@ struct TaskDetail {
         right: 20
       })
 
-      Column() {
-        Image($r("app.media.ic_navigation")).width(22).height(22)
-        Text("开始导航").fontSize(14).margin({ top: 10, bottom: 10 })
-      }.justifyContent(FlexAlign.SpaceBetween)
-      .margin({
-        top: 20
-      })
+      // 在途情况下 才显示导航
+      if (this.taskDetailData.status === TaskTypeEnum.Line) {
+        Column() {
+          Image($r("app.media.ic_navigation")).width(22).height(22)
+          Text("开始导航").fontSize(14).margin({ top: 10, bottom: 10 })
+            .onClick(() => {
+              this.beginNav()
+            })
+        }.justifyContent(FlexAlign.SpaceBetween)
+        .margin({
+          top: 20
+        })
+      }
+
 
     }.justifyContent(FlexAlign.SpaceBetween).alignItems(VerticalAlign.Center).width('100%')
 
@@ -201,6 +209,24 @@ struct TaskDetail {
     if (params && params.id) {
       this.getTaskDetail(params.id)
     }
+  }
+
+  // 获取基础信息
+  // 开始导航
+  async beginNav() {
+    try {
+      let context = getContext(this) as common.UIAbilityContext
+      context.startAbility({
+        action: 'ohos.want.action.viewData',
+        entities: ['entity.system.browsable'],
+        uri: encodeURI('https://gaode.com/search?query=' + this.taskDetailData.endAddress)
+      })
+    } catch (error) {
+      AlertDialog.show({
+        message: JSON.stringify(error)
+      })
+    }
+
   }
 
   async onPageShow() {
