@@ -2,6 +2,11 @@ import { CommonRouterParams, DateFormat, HmCard, HmCardItem, HmNavBar, HmSelectC
 import { ExceptionParamsType, ExceptionParamsTypeModel } from '../../models'
 import { router } from '@kit.ArkUI'
 
+class ExceptionItemClass {
+  name: string = ""
+  index: number = 0
+}
+
 @Entry
 @Component
 struct ExceptionReport {
@@ -11,16 +16,49 @@ struct ExceptionReport {
   typeDialog: CustomDialogController = new CustomDialogController({
     builder: HmSelectCard({
       cardContent: () => {
-        this.getCardContent
+        this.getCardContent()
       }
     }),
     autoCancel: false,
     customStyle: true,
     alignment: DialogAlignment.Bottom
   })
+  @State
+  exceptErrorList: string[] =
+    ["发动机启动困难", "不着车、漏油", "照明失灵", "有异常响动", "排烟异常、温度异常", "其他问题"]
+  @State
+  selectIndex: number = 0
 
   @Builder
+  getSingleItem(item: string, index: number, showBorder: boolean) {
+    Row() {
+      Text(item)
+        .fontSize(14)
+        .fontColor($r("app.color.text_primary"))
+      Image(this.selectIndex === index ? $r("app.media.ic_check_true") : $r("app.media.ic_check_false"))
+        .width(32)
+        .height(32)
+    }
+    .onClick(() => {
+      this.selectIndex = index // 赋值索引
+    })
+    .height(60)
+    .width("100%")
+    .justifyContent(FlexAlign.SpaceBetween)
+    .border({
+      color: $r("app.color.background_divider"),
+      width: {
+        bottom: showBorder ? 1 : 0
+      }
+    })
+  }
+
+  // 传入HmSelectCard组件
+  @Builder
   getCardContent() {
+    ForEach(this.exceptErrorList, (item: string, index: number) => {
+      this.getSingleItem(item, index, index !== this.exceptErrorList.length - 1)
+    })
   }
 
   aboutToAppear() {
