@@ -25,7 +25,7 @@ struct TaskList {
     // 追加数据
     // this.taskListData = this.taskListData.concat(result.items) // 拿到返回的数组
     if (append) {
-      this.taskListData.push(...result.items) // 延展运算符的写法
+      this.taskListData.push(...result.items || []) // 延展运算符的写法
     } else {
       this.taskListData = result.items
     }
