@@ -1,5 +1,7 @@
 import { promptAction } from '@kit.ArkUI'
 import { ListDataSource } from '../models'
+import vibrator from '@ohos.vibrator';
+import { AVPlayerClass } from '../utils';
 
 @Component
 struct HmList {
@@ -123,7 +125,8 @@ struct HmList {
         this.refreshIng = false // 关闭下拉的动画效果
         this.loading = false // 关闭上拉刷新的loading
         // 下拉刷新意味着所有数据全都不要 重新来过
-
+        vibrator.startVibration({ duration: 300, type: 'time' }, { id: 0, usage: 'touch' })
+        AVPlayerClass.playAudio("success.wav", getContext(this))
       }
     })
 
