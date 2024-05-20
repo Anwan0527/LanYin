@@ -1,4 +1,11 @@
-import { TaskDetailInfoModel, TaskListData, TaskListParams, PickUpParamsModel, DeliverParamsTypeModel } from '../models'
+import {
+  TaskDetailInfoModel,
+  TaskListData,
+  TaskListParams,
+  PickUpParamsModel,
+  DeliverParamsTypeModel,
+  CarRecordTypeModel
+} from '../models'
 import { Request } from '@hm/basic'
 
 
@@ -14,6 +21,10 @@ export const deliver = (data: DeliverParamsTypeModel) => {
 
 export const getTaskList = (params: TaskListParams) => {
   return Request.get<TaskListData>("/tasks/list", params)
+}
+
+export const carRecord = (data: CarRecordTypeModel) => {
+  return Request.post<null>("/tasks/truckRegistration", data)
 }
 
 // 获取任务列表
