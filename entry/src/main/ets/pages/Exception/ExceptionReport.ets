@@ -1,4 +1,13 @@
-import { CommonRouterParams, DateFormat, HmCard, HmCardItem, HmNavBar, HmSelectCard, HmUpload } from '@hm/basic'
+import {
+  CommonRouterParams,
+  DateFormat,
+  HmCard,
+  HmCardItem,
+  HmNavBar,
+  HmSelectCard,
+  HmUpload,
+  ImageList
+} from '@hm/basic'
 import { ExceptionParamsType, ExceptionParamsTypeModel } from '../../models'
 import { router } from '@kit.ArkUI'
 
@@ -34,6 +43,7 @@ struct ExceptionReport {
     customStyle: true,
     alignment: DialogAlignment.Bottom
   })
+  maxNumber: number = 50
 
   @Builder
   getSingleItem(item: string, index: number, showBorder: boolean) {
@@ -78,6 +88,14 @@ struct ExceptionReport {
     }
   }
 
+  getBtnEnable() {
+    return !!(this.exceptionForm.exceptionDescribe &&
+    this.exceptionForm.exceptionPlace &&
+    this.exceptionForm.exceptionTime &&
+    this.exceptionForm.exceptionType &&
+    this.exceptionForm.exceptionDescribe)
+  }
+
   build() {
     Column() {
       HmNavBar({ title: '上报异常' })
@@ -118,9 +136,18 @@ struct ExceptionReport {
               showBottomBorder: false
             })
             TextArea({
-              placeholder: '请输入异常描述'
-            }).height(130).borderRadius(8).placeholderColor($r('app.color.text_secondary')).fontSize(14)
-            Text(`0/50`)
+              placeholder: '请输入异常描述',
+              text: this.exceptionForm.exceptionDescribe!
+            })
+              .height(130)
+              .borderRadius(8)
+              .placeholderColor($r('app.color.text_secondary'))
+              .fontSize(14)
+              .onChange((value) => {
+                this.exceptionForm.exceptionDescribe = value
+              })
+              .maxLength(this.maxNumber)
+            Text(`${this.exceptionForm.exceptionDescribe?.length || 0}/${this.maxNumber}`)
               .margin({
                 top: -30
               })
@@ -135,8 +162,12 @@ struct ExceptionReport {
           HmCard() {
             HmUpload({
               title: '上传图片(最多6张)',
-              imgList: []
-            , canUpload: true
+              maxNumber: 6,
+              canUpload: true,
+              imgList: this.exceptionForm.exceptionImagesList || [],
+              onListChange: (list: ImageList[]) => {
+                this.exceptionForm.exceptionImagesList = []
+              }
             })
             Row().height(20)
           }
@@ -148,7 +179,9 @@ struct ExceptionReport {
 
 
       Row() {
-        Button("提交").height(50).width(207).backgroundColor($r('app.color.primary_disabled'))
+        Button("提交").height(50).width(207).backgroundColor(
+          this.getBtnEnable() ? $r('app.color.primary') :
+          $r('app.color.primary_disabled')).enabled(this.getBtnEnable())
       }
       .position({
         y: '100%'
