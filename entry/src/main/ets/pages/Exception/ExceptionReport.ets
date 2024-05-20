@@ -12,22 +12,28 @@ class ExceptionItemClass {
 struct ExceptionReport {
   @State
   exceptionForm: ExceptionParamsTypeModel = new ExceptionParamsTypeModel({} as ExceptionParamsType)
+  @State
+  exceptErrorList: string[] =
+    ["发动机启动困难", "不着车、漏油", "照明失灵", "有异常响动", "排烟异常、温度异常", "其他问题"]
+  @State
+  selectIndex: number = 0
   // 异常类型弹层
   typeDialog: CustomDialogController = new CustomDialogController({
     builder: HmSelectCard({
       cardContent: () => {
         this.getCardContent()
+      },
+      confirm: () => {
+        if (this.selectIndex > -1) {
+          this.exceptionForm.exceptionType = this.exceptErrorList[this.selectIndex]
+        }
+        this.typeDialog.close()
       }
     }),
     autoCancel: false,
     customStyle: true,
     alignment: DialogAlignment.Bottom
   })
-  @State
-  exceptErrorList: string[] =
-    ["发动机启动困难", "不着车、漏油", "照明失灵", "有异常响动", "排烟异常、温度异常", "其他问题"]
-  @State
-  selectIndex: number = 0
 
   @Builder
   getSingleItem(item: string, index: number, showBorder: boolean) {
@@ -88,7 +94,10 @@ struct ExceptionReport {
             })
             HmCardItem({ leftTitle: '上报位置', rightText: '请选择' })
             HmCardItem({
-              leftTitle: '异常类型', rightText: '请选择', onRightClick: () => {
+              leftTitle: '异常类型',
+              rightText: this.exceptionForm.exceptionType || '请选择',
+              showBottomBorder: false,
+              onRightClick: () => {
                 this.typeDialog.open()
               }
             })
