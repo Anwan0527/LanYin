@@ -1,4 +1,5 @@
 import { promptAction } from '@kit.ArkUI'
+import { ListDataSource } from '../models'
 
 @Component
 struct HmList {
@@ -7,8 +8,9 @@ struct HmList {
   @State
   refreshIng: boolean = false // 控制下拉刷新的变量
   // 传入数据的数组 根据数组进行渲染
-  @Prop
-  dataSource: object[] = [] // 数据源
+  @Link
+  @Watch("updateDataSource")
+  dataSource: object[] // 数据源
   // 需要一个标记 还没有数据的标记
   @Prop
   finished: boolean = false // 是否还有下一页数据
@@ -18,12 +20,18 @@ struct HmList {
   finishText: string = "没有数据啦" // 所有数据加载完成的文本
   @BuilderParam
   renderItem: (item: object) => void // 由调用者传入 由HmList调用 传入每一个项的数据
+  lazyDataSource: ListDataSource = new ListDataSource()
   // 上拉加载的方法
   onLoad: () => void = () => {
   } // 由调用者传入
   // 下拉刷新方法
   onRefresh: () => void = () => {
   } // 下拉刷新的方法
+
+  // 更新数据
+  updateDataSource() {
+    this.lazyDataSource.reloadData(this.dataSource)
+  }
 
   // 动态生成文本
   getStatusText() {
@@ -83,7 +91,7 @@ struct HmList {
   build() {
     Refresh({ refreshing: $$this.refreshIng, builder: this.getRefreshDisPlay() }) {
       List() {
-        ForEach(this.dataSource, (item: object) => {
+        LazyForEach(this.lazyDataSource, (item: object) => {
           // 每一项的结构的UI内容不是由列表决定 而由使用者决定
           // 传入builderParam
           if (this.renderItem) {
