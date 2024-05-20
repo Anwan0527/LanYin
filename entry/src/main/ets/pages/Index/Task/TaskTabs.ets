@@ -64,8 +64,14 @@ struct TaskTabs {
                   status: TaskTypeEnum.Line
                 } as TaskListParams)
               })
-            } else {
-              Text(item.title)
+            } else if (item.name === "finish") {
+              TaskList({
+                queryParams: new TaskListParamsModel({
+                  page: 1,
+                  pageSize: 5,
+                  status: TaskTypeEnum.Finish
+                } as TaskListParams)
+              })
             }
           }
         })

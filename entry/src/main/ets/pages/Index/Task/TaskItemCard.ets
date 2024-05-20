@@ -4,16 +4,20 @@ import { router } from '@kit.ArkUI'
 @Preview
 @Component
 struct TaskItemCard {
+  // taskItemData: Partial<TaskInfoItem>  = {}
   taskItemData: TaskInfoItemModel = new TaskInfoItemModel({} as TaskInfoItem)
 
-  // 获取按钮可用性
+  // 获取提货按钮是否可用
   getBtnEnable() {
-    const value = this.taskItemData.status.toString()
+    // 提货的时候可以点按钮
     if (this.taskItemData.enablePickUp) {
       return true
     }
-    switch (value) {
+    // 判断当然的状态
+    // 交货或者回车登记的时候可点按钮
+    switch (this.taskItemData.status.toString()) {
       case TaskTypeEnum.Line.toString():
+        return true
       case TaskTypeEnum.Delivered.toString():
         return true
       default:
@@ -21,10 +25,20 @@ struct TaskItemCard {
     }
   }
 
-  // 获取按钮显示文本
+  // 去提货
+  toPickUp() {
+    router.pushUrl({
+      url: 'pages/TaskDetail/TaskDetail',
+      params: {
+        id: this.taskItemData.id
+      }
+    })
+  }
+
+  // 获取按钮显示的文本
   getBtnText() {
-    const value = this.taskItemData.status.toString()
-    switch (value) {
+    // 虽然类型为string 但是实际值是number
+    switch (this.taskItemData.status.toString()) {
       case TaskTypeEnum.Waiting.toString():
         return "提货"
       case TaskTypeEnum.Line.toString():
@@ -33,18 +47,6 @@ struct TaskItemCard {
         return "回车登记"
       default:
         return ""
-    }
-  }
-
-  // 去提货
-  toPickUp() {
-    if (this.getBtnEnable()) {
-      router.pushUrl({
-        url: 'pages/TaskDetail/TaskDetail',
-        params: {
-          id: this.taskItemData.id
-        }
-      })
     }
   }
 
@@ -103,15 +105,21 @@ struct TaskItemCard {
             .margin({ top: 4 })
         }.alignItems(HorizontalAlign.Start)
 
-        Button(this.getBtnText(), { type: ButtonType.Capsule })
-          .backgroundColor(this.getBtnEnable() ? $r('app.color.primary') : $r('app.color.primary_disabled'))
-          .fontColor($r("app.color.white"))
-          .fontSize(14)
-          .height(32)
-          .enabled(this.getBtnEnable())
-          .onClick(() => {
-            this.toPickUp()
-          })
+        // ts 的类型其实是鸭子 结构类型
+        // 名字可以不一样 但是结构一样也能匹配类型
+        if (parseInt(this.taskItemData.status) !== TaskTypeEnum.Finish) {
+          Button(this.getBtnText(), { type: ButtonType.Capsule })
+            .backgroundColor($r('app.color.primary'))
+            .fontColor($r("app.color.white"))
+            .fontSize(14)
+            .height(32)
+            .enabled(this.getBtnEnable())
+            .onClick(() => {
+              this.toPickUp()
+            })
+        }
+
+
       }.justifyContent(FlexAlign.SpaceBetween).width('100%')
     }
     .margin({ left: 15, right: 15, top: 15 })
@@ -123,6 +131,11 @@ struct TaskItemCard {
     })
     .borderRadius(10)
     .backgroundColor($r('app.color.white'))
+    .onClick(() => {
+      if (parseInt(this.taskItemData.status) === TaskTypeEnum.Finish) {
+        this.toPickUp() // 已完成情况下 点击卡片可以进去看详情
+      }
+    })
 
   }
 }
