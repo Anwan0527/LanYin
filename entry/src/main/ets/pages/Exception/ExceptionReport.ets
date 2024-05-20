@@ -9,7 +9,8 @@ import {
   ImageList
 } from '@hm/basic'
 import { ExceptionParamsType, ExceptionParamsTypeModel } from '../../models'
-import { router } from '@kit.ArkUI'
+import { promptAction, router } from '@kit.ArkUI'
+import { exceptionReport } from '../../api'
 
 class ExceptionItemClass {
   name: string = ""
@@ -86,6 +87,14 @@ struct ExceptionReport {
     if (params && params.id) {
       this.exceptionForm.transportTaskId = params.id
     }
+  }
+
+  async btnReport() {
+    await exceptionReport(this.exceptionForm)
+    promptAction.showToast({
+      message: '上报异常成功'
+    })
+    router.back()
   }
 
   getBtnEnable() {
@@ -166,7 +175,7 @@ struct ExceptionReport {
               canUpload: true,
               imgList: this.exceptionForm.exceptionImagesList || [],
               onListChange: (list: ImageList[]) => {
-                this.exceptionForm.exceptionImagesList = []
+                this.exceptionForm.exceptionImagesList = list
               }
             })
             Row().height(20)
@@ -179,9 +188,16 @@ struct ExceptionReport {
 
 
       Row() {
-        Button("提交").height(50).width(207).backgroundColor(
-          this.getBtnEnable() ? $r('app.color.primary') :
-          $r('app.color.primary_disabled')).enabled(this.getBtnEnable())
+        Button("提交")
+          .height(50)
+          .width(207)
+          .backgroundColor(
+            this.getBtnEnable() ? $r('app.color.primary') :
+            $r('app.color.primary_disabled'))
+          .enabled(this.getBtnEnable())
+          .onClick(() => {
+            this.btnReport()
+          })
       }
       .position({
         y: '100%'
