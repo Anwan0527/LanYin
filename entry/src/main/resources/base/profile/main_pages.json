@@ -5,6 +5,6 @@
     "pages/Login/Login",
     "pages/Setting/Setting",
     "pages/TaskDetail/TaskDetail",
-    "pages/CardRecord/Record"
+    "pages/CarRecord/CarRecord"
   ]
 }
