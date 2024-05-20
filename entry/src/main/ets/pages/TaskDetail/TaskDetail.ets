@@ -162,11 +162,34 @@ struct TaskDetail {
   }
 
   // 提货信息内容
+
+  // 专门负责提货信息的结构
+  @Builder
+  getPickUpContent() {
+    HmUpload({
+      title: '请拍照上传货品凭证',
+      canUpload: this.taskDetailData.status === TaskTypeEnum.Waiting,
+      imgList: this.taskDetailData.cargoPickUpPictureList || [],
+      onListChange: (list: ImageList[]) => {
+        this.taskDetailData.cargoPickUpPictureList = list
+      }
+    })
+    HmUpload({
+      title: '请拍照上传货品照片',
+      canUpload: this.taskDetailData.status === TaskTypeEnum.Waiting,
+      imgList: this.taskDetailData.cargoPictureList || [],
+      onListChange: (list: ImageList[]) => {
+        this.taskDetailData.cargoPictureList = list
+      }
+    })
+  }
+
   // 专门负责交货信息的结构
   @Builder
   getDeliverContent() {
     HmUpload({
       title: '请拍照上传交货货品凭证',
+      canUpload: this.taskDetailData.status === TaskTypeEnum.Line,
       imgList: this.taskDetailData.deliverPictureList || [],
       onListChange: (list: ImageList[]) => {
         this.taskDetailData.deliverPictureList = list
@@ -174,33 +197,11 @@ struct TaskDetail {
     })
     HmUpload({
       title: '请拍照上传交货货品照片',
+      canUpload: this.taskDetailData.status === TaskTypeEnum.Line,
       imgList: this.taskDetailData.certificatePictureList || [],
       onListChange: (list: ImageList[]) => {
         this.taskDetailData.certificatePictureList = list
       }
-    })
-  }
-
-  // 提货信息
-  @Builder
-  getPickUpContent() {
-    // @Link修饰符 修饰只能是一层数据
-    HmUpload({
-      title: '请拍照上传回单凭证',
-      imgList: this.taskDetailData.cargoPickUpPictureList || [], // 父组件给子组件传
-      onListChange: (list: ImageList[]) => {
-        this.taskDetailData.cargoPickUpPictureList = list // 子组件给父组件传
-      },
-      // canUpload: this.taskDetailData.status === TaskTypeEnum.Waiting  //todo 这里后续需要补上
-    })
-    HmUpload({
-      title: '请拍照上传货品照片',
-      imgList: this.taskDetailData.cargoPictureList || [],
-      onListChange: (list: ImageList[]) => {
-        this.taskDetailData.cargoPictureList = list
-      },
-      // canUpload: this.taskDetailData.status === TaskTypeEnum.Waiting   //todo 这里后续需要补上
-
     })
   }
 
