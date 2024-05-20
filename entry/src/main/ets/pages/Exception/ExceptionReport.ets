@@ -81,8 +81,8 @@ struct ExceptionReport {
   // aboutToAppear
   onPageShow(): void {
     const params = router.getParams() as CommonRouterParams
-    if (params && params.location) {
-      this.exceptionForm.exceptionPlace = params.location
+    if (params && params.address) {
+      this.exceptionForm.exceptionPlace = params.address
     }
     if (params && params.id) {
       this.exceptionForm.transportTaskId = params.id
@@ -94,7 +94,12 @@ struct ExceptionReport {
     promptAction.showToast({
       message: '上报异常成功'
     })
-    router.back()
+    router.back({
+      url: 'pages/TaskDetail/TaskDetail',
+      params: {
+        addExcept: true
+      }
+    })
   }
 
   getBtnEnable() {

@@ -195,6 +195,14 @@ struct TaskDetail {
     }
   }
 
+  async onPageShow() {
+    const params = router.getParams() as CommonRouterParams
+    if (params && params.addExcept) {
+      const result = await getTaskDetail(this.taskDetailData.id)
+      this.taskDetailData.exceptionList = result.exceptionList
+    }
+  }
+
   async getTaskDetail(id: string) {
     this.loading.open()
     this.taskDetailData = await getTaskDetail(id)
