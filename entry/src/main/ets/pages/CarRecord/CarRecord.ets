@@ -32,8 +32,16 @@ struct CarRecord {
             })
             HmCardItem({
               leftTitle: '回车时间',
-              rightText: '请选择',
-              showBottomBorder: false
+              rightText: "请选择",
+              showBottomBorder: false,
+              onRightClick: () => {
+                DatePickerDialog.show({
+                  showTime: true,
+                  useMilitaryTime: true,
+                  onDateAccept: (value: Date) => {
+                  }
+                })
+              }
             })
           }
 
