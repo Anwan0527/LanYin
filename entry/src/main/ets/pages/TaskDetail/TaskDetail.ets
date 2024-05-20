@@ -271,6 +271,23 @@ struct TaskDetail {
           .flexGrow(1)
           .margin({ left: 13 })
 
+      } else if (this.taskDetailData.status === TaskTypeEnum.Delivered) {
+        Row() {
+          // 已交付显示回车登记
+          Button("回车登记", { type: ButtonType.Capsule })
+            .backgroundColor($r('app.color.primary'))
+            .fontColor($r('app.color.white'))
+            .height(50)
+            .width('80%')
+            .onClick(() => {
+              router.pushUrl({
+                url: 'pages/CarRecord/CarRecord',
+                params: {
+                  id: this.taskDetailData.id
+                }
+              })
+            })
+        }.width('100%').justifyContent(FlexAlign.Center)
       }
 
     }
