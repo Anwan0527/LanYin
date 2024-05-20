@@ -20,6 +20,10 @@ struct Delay {
     }
   }
 
+  getBtnEnable() {
+    return !!(this.delayForm.id && this.delayForm.delayReason && this.delayForm.delayTime)
+  }
+
   build() {
     Column() {
       HmNavBar({ title: '延迟提货' })
@@ -59,7 +63,17 @@ struct Delay {
           .padding({ right: 15 })
           .fontColor($r('app.color.text_secondary'))
         Row() {
-          Button("提交").height(50).width(207).backgroundColor($r('app.color.primary_disabled'))
+          Button("提交")
+            .height(50)
+            .width(207)
+            .backgroundColor(
+              this.getBtnEnable() ? $r('app.color.primary') :
+              $r('app.color.primary_disabled')
+            )
+            .enabled(this.getBtnEnable())
+            .onClick(() => {
+
+            })
         }.justifyContent(FlexAlign.Center).padding({
           top: 20,
           bottom: 20
