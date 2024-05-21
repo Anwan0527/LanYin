@@ -31,7 +31,7 @@ async function requestHttp<T>(url: string = "", method: http.RequestMethod = htt
       Authorization: AppStorage.get(TOKEN_KEY) || "", // 设置请求头的token 每个接口都有
     },
     method,
-    readTimeout: 10000 // 如果多少秒没响应就断开
+    readTimeout: 10000, // 如果多少秒没响应就断开
   }
   try {
     // 发请求

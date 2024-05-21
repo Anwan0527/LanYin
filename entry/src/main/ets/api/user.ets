@@ -1,12 +1,19 @@
 import { Request } from '@hm/basic'
-import { LoginFormModel, UserCarDataTypeModel, UserInfoModel } from '../models'
+import { LoginFormModel, RegisterFormModel, UserCarDataTypeModel, UserInfoModel } from '../models'
 import { UserTaskInfoModel, UserTaskInfoParamsModel } from '../models'
+import { http } from '@kit.NetworkKit'
 
 
 // 登录接口实现
 export const login = (data: LoginFormModel) => {
   return Request.post<string>("/login/account", data)
 }
+
+//注册接口实现
+export const register = (data: RegisterFormModel) => {
+  return Request.post<string>("/register/account", data)
+}
+
 
 // 获取用户信息
 export const getUserInfo = () => {

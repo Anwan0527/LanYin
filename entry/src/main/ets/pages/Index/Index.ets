@@ -1,7 +1,7 @@
 import { TabClass } from '@hm/basic'
 import My from './My/My'
 import TaskTabs from './Task/TaskTabs'
-import Message from '../Message/Message'
+import Message from './Message/Message'
 
 @Entry
 @Component

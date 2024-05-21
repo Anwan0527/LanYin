@@ -10,11 +10,12 @@
     "pages/ExceptionReport/ExceptionReport",
     "pages/ExceptionReport/ExceptionDetail",
     "pages/SelectLocation/SelectLocation",
-    "pages/Message/MessageDetail",
+    "pages/Index/Message/MessageDetail",
     "pages/Car/Car",
     "pages/UserTask/UserTask",
     "pages/Setting/BindMobile",
     "pages/Setting/MessageSend",
-    "pages/Setting/ChangePassword"
+    "pages/Setting/ChangePassword",
+    "pages/Register/Register"
   ]
 }

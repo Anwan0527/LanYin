@@ -85,7 +85,7 @@ struct SelectLocation {
                   router.back({
                     url: "pages/ExceptionReport/ExceptionReport",
                     params: {
-                      location: item.name
+                      address: item.name
                     }
                   })
                 })

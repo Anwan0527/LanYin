@@ -1,50 +1,44 @@
 import {
-  CommonRouterParams,
-  DateFormat,
+  HmSelectCard,
   HmCard,
   HmCardItem,
   HmNavBar,
-  HmSelectCard,
   HmUpload,
-  ImageList
+  DateFormat,
+  CommonRouterParams,
+  UploadFile
 } from '@hm/basic'
-import { ExceptionParamsType, ExceptionParamsTypeModel } from '../../models'
+import { ExceptionParamsTypeModel, ExceptionParamsType } from '../../models'
 import { promptAction, router } from '@kit.ArkUI'
 import { exceptionReport } from '../../api'
-
-class ExceptionItemClass {
-  name: string = ""
-  index: number = 0
-}
 
 @Entry
 @Component
 struct ExceptionReport {
   @State
-  exceptionForm: ExceptionParamsTypeModel = new ExceptionParamsTypeModel({} as ExceptionParamsType)
+  selectIndex: number = -1
   @State
-  exceptErrorList: string[] =
-    ["发动机启动困难", "不着车、漏油", "照明失灵", "有异常响动", "排烟异常、温度异常", "其他问题"]
-  @State
-  selectIndex: number = 0
-  // 异常类型弹层
-  typeDialog: CustomDialogController = new CustomDialogController({
+  exceptionForm: ExceptionParamsTypeModel = new ExceptionParamsTypeModel(
+    {} as ExceptionParamsType
+  )
+  exceptionList: string[] = ["发动机启用困难", "不着车，漏油", "照明失灵", "有异常响动", "排烟异常温度异常", "其他问题"]
+  // 选择类型的弹层
+  selectTypeDialog: CustomDialogController = new CustomDialogController({
     builder: HmSelectCard({
       cardContent: () => {
+        // 必须调用一个builder的函数
         this.getCardContent()
       },
       confirm: () => {
         if (this.selectIndex > -1) {
-          this.exceptionForm.exceptionType = this.exceptErrorList[this.selectIndex]
+          this.exceptionForm.exceptionType = this.exceptionList[this.selectIndex]
         }
-        this.typeDialog.close()
+        this.selectTypeDialog.close()
       }
     }),
-    autoCancel: false,
     customStyle: true,
     alignment: DialogAlignment.Bottom
   })
-  maxNumber: number = 50
 
   @Builder
   getSingleItem(item: string, index: number, showBorder: boolean) {
@@ -73,8 +67,8 @@ struct ExceptionReport {
   // 传入HmSelectCard组件
   @Builder
   getCardContent() {
-    ForEach(this.exceptErrorList, (item: string, index: number) => {
-      this.getSingleItem(item, index, index !== this.exceptErrorList.length - 1)
+    ForEach(this.exceptionList, (item: string, index: number) => {
+      this.getSingleItem(item, index, index !== this.exceptionList.length - 1)
     })
   }
 
@@ -89,25 +83,28 @@ struct ExceptionReport {
     }
   }
 
-  async btnReport() {
-    await exceptionReport(this.exceptionForm)
-    promptAction.showToast({
-      message: '上报异常成功'
-    })
-    router.back({
-      url: 'pages/TaskDetail/TaskDetail',
-      params: {
-        addExcept: true
-      }
-    })
-  }
-
   getBtnEnable() {
     return !!(this.exceptionForm.exceptionDescribe &&
     this.exceptionForm.exceptionPlace &&
-    this.exceptionForm.exceptionTime &&
     this.exceptionForm.exceptionType &&
-    this.exceptionForm.exceptionDescribe)
+    this.exceptionForm.exceptionTime)
+  }
+
+  async submit() {
+    // 先上传 再调用接口
+    if (this.exceptionForm.exceptionImagesList?.length) {
+      // 云端地址
+      this.exceptionForm.exceptionImagesList = await UploadFile(this.exceptionForm.exceptionImagesList)
+    }
+    // 调用接口
+    await exceptionReport(this.exceptionForm) // 上报异常
+    promptAction.showToast({ message: '上报成功' })
+    router.back({
+      url: 'pages/TaskDetail/TaskDetail',
+      params: {
+        addExcept: true // 表示上报异常成功
+      }
+    })
   }
 
   build() {
@@ -136,11 +133,9 @@ struct ExceptionReport {
               }
             })
             HmCardItem({
-              leftTitle: '异常类型',
-              rightText: this.exceptionForm.exceptionType || '请选择',
-              showBottomBorder: false,
+              leftTitle: '异常类型', rightText: this.exceptionForm.exceptionType || '请选择',
               onRightClick: () => {
-                this.typeDialog.open()
+                this.selectTypeDialog.open()
               }
             })
             HmCardItem({
@@ -151,7 +146,7 @@ struct ExceptionReport {
             })
             TextArea({
               placeholder: '请输入异常描述',
-              text: this.exceptionForm.exceptionDescribe!
+              text: this.exceptionForm.exceptionDescribe
             })
               .height(130)
               .borderRadius(8)
@@ -160,8 +155,8 @@ struct ExceptionReport {
               .onChange((value) => {
                 this.exceptionForm.exceptionDescribe = value
               })
-              .maxLength(this.maxNumber)
-            Text(`${this.exceptionForm.exceptionDescribe?.length || 0}/${this.maxNumber}`)
+              .maxLength(50)
+            Text(`${this.exceptionForm.exceptionDescribe?.length || 0}/50`)
               .margin({
                 top: -30
               })
@@ -176,11 +171,10 @@ struct ExceptionReport {
           HmCard() {
             HmUpload({
               title: '上传图片(最多6张)',
-              maxNumber: 6,
-              canUpload: true,
               imgList: this.exceptionForm.exceptionImagesList || [],
-              onListChange: (list: ImageList[]) => {
-                this.exceptionForm.exceptionImagesList = list
+              canUpload: true,
+              onListChange: (list) => {
+                this.exceptionForm.exceptionImagesList = list // 接回传回的数组 相册地址 并不是线上地址
               }
             })
             Row().height(20)
@@ -196,12 +190,10 @@ struct ExceptionReport {
         Button("提交")
           .height(50)
           .width(207)
-          .backgroundColor(
-            this.getBtnEnable() ? $r('app.color.primary') :
-            $r('app.color.primary_disabled'))
+          .backgroundColor($r('app.color.primary'))
           .enabled(this.getBtnEnable())
           .onClick(() => {
-            this.btnReport()
+            this.submit()
           })
       }
       .position({

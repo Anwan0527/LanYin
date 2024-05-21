@@ -1,53 +1,52 @@
-import { HmList, HmLoading } from '@hm/basic/Index'
+import { TaskListParamsModel, TaskTypeEnum, TaskListParams, TaskInfoItemModel } from '../../../models'
 import { getTaskList } from '../../../api'
-import { TaskInfoItem, TaskInfoItemModel, TaskListParams, TaskListParamsModel, TaskTypeEnum } from '../../../models'
 import TaskItemCard from './TaskItemCard'
 
-// 待提货
+import promptAction from '@ohos.promptAction'
+import { HmList, HmLoading } from '@hm/basic/Index'
+
 @Component
 struct TaskList {
   @State
-  reset: boolean = false // 用于控制重置状态
-  loading: CustomDialogController = new CustomDialogController({
-    builder: HmLoading({
-      title: '搜索查询中'
-    }),
-    customStyle: true,
+  queryParams: TaskListParamsModel = new TaskListParamsModel({
+    page: 1,
+    pageSize: 5,
+    status: TaskTypeEnum.Waiting
+  } as TaskListParams)
+  @State
+  taskListData: TaskInfoItemModel[] = []
+  @State
+  reset: boolean = false // 重置状态
+  @State
+  allPage: number = 1 // 总页数
+  layer: CustomDialogController = new CustomDialogController({
     autoCancel: false,
-    alignment: DialogAlignment.Center
+    customStyle: true,
+    alignment: DialogAlignment.Center,
+    builder: HmLoading()
   })
-  @State
-  queryParams: TaskListParamsModel = new TaskListParamsModel(
-    {
-      status: TaskTypeEnum.Waiting, // 待提货的类型
-      page: 1, // 第几页
-      pageSize: 5 // 每页几条数据
-    } as TaskListParams
-  )
-  @State
-  taskListData: TaskInfoItem[] = []
-  @State
-  allPage: number = 1 // 默认只有一页
 
-  //上拉加载
   async getTaskList(append: boolean) {
     const result = await getTaskList(this.queryParams)
-    // 追加数据
-    // this.taskListData = this.taskListData.concat(result.items) // 拿到返回的数组
+    // ...是限制使用，在数组中可用
     if (append) {
-      this.taskListData.push(...result.items || []) // 延展运算符的写法
+      this.taskListData = this.taskListData.concat(result.items || [])
     } else {
-      this.taskListData = result.items
+      this.taskListData = result.items || []
     }
-    this.allPage = result.pages // 总页数
-    this.queryParams.page++ // 下次请求的页码
+
+    this.allPage = result.pages // 取到总页数
+    this.queryParams.page++ // 下一次的请求的页码
   }
 
-  // 下拉刷新函数
+  // 下拉刷新的方法
   async onRefresh() {
-    // 重新请求第一页数据
-    this.queryParams.page = 1 // 重置第一页
-    await this.getTaskList(false) // 直接赋值
+    this.allPage = 1 // 总页数也得回到第一页
+    this.queryParams.page = 1 // 页码重置第一页
+    await this.getTaskList(false)
+    promptAction.showToast({
+      message: '刷新成功'
+    })
   }
 
   @Builder
@@ -55,12 +54,11 @@ struct TaskList {
     TaskItemCard({ taskItemData: item as TaskInfoItemModel })
   }
 
-  // 日期补零
   addZero(value: number) {
     return value.toString().padStart(2, "0")
   }
 
-  // 控制筛选按钮可点
+  // 获取搜索按钮的可用行
   getSearchEnable() {
     return !!(this.queryParams.startTime && this.queryParams.endTime)
   }
@@ -69,28 +67,34 @@ struct TaskList {
   getSearchForm() {
     Column() {
       Row() {
-        Search({ placeholder: '请输入任务编号' }).backgroundColor($r('app.color.background_page')).height(32)
-          .onSubmit(async value => {
-            this.loading.open()
-            this.queryParams.page = 1
+        Search({ placeholder: '请输入任务编号', value: this.queryParams.transportTaskId || '' })
+          .backgroundColor($r('app.color.background_page'))
+          .height(32)
+          .onChange(value => {
+            this.queryParams.transportTaskId = value
+          })
+          .onSubmit(async (value) => {
+            this.layer.open()
+            this.queryParams.page = 1 // 不论什么条件变化 都会从第一页开始查
             if (value) {
+              // value有值的情况下
+              // 处理非数字类型无响应的情况
               this.queryParams.startTime = ''
               this.queryParams.endTime = ''
-              this.reset = false
-              this.allPage = 0 // 有值意味着只有一条 因为是根据单号传的，所以不让它继续往后查 否则会重复
               this.queryParams.transportTaskId = isNaN(parseInt(value)) ? "0" : value
+              this.reset = false
+              this.allPage = 0 // 相当于锁死条件 不可能出现第二条
             } else {
-              this.allPage = 1 // 没值意味着查不到 重新加载
-              this.queryParams.transportTaskId = ""
+              this.allPage = 1 // 没值意味着查不到 重新回到列表型状态
+              this.queryParams.transportTaskId = "" // id设置为空
             }
             const result = await getTaskList(this.queryParams)
             this.taskListData = result.items || []
-            this.loading.close()
+            this.layer.close()
           })
       }
       .justifyContent(FlexAlign.Center)
       .padding({ left: 15, right: 15, bottom: 5 })
-
 
       Row() {
         // 完成搜索页需要测试点击之后键盘和弹层同时弹出的情况
@@ -107,7 +111,6 @@ struct TaskList {
               onAccept: (value: DatePickerResult) => {
                 this.queryParams.startTime =
                   `${value.year}-${this.addZero(value.month! + 1)}-${this.addZero(value.day)}`
-
               }
             })
           })
@@ -124,8 +127,8 @@ struct TaskList {
             DatePickerDialog.show({
               selected: new Date(),
               onAccept: (value: DatePickerResult) => {
-                this.queryParams.endTime = `${value.year}-${this.addZero(value.month! + 1)}-${this.addZero(value.day)}`
-
+                this.queryParams.endTime =
+                  `${value.year}-${this.addZero(value.month! + 1)}-${this.addZero(value.day)}`
               }
             })
           })
@@ -133,19 +136,21 @@ struct TaskList {
           .backgroundColor(this.getSearchEnable() ? $r('app.color.primary') : $r('app.color.primary_disabled'))
           .height(32)
           .width(60)
+          .enabled(this.getSearchEnable())
           .onClick(async () => {
+            this.queryParams.transportTaskId = ''
             if (this.reset) {
-              this.queryParams.startTime = ''
-              this.queryParams.endTime = ''
+              this.queryParams.startTime = ""
+              this.queryParams.endTime = ""
               this.reset = false
             } else {
               this.reset = true
             }
-            this.loading.open()
+            this.layer.open()
             this.allPage = 1
             this.queryParams.page = 1
             await this.getTaskList(false)
-            this.loading.close()
+            this.layer.close()
           })
       }.width('100%').alignItems(VerticalAlign.Center).justifyContent(FlexAlign.SpaceAround)
     }
@@ -157,24 +162,30 @@ struct TaskList {
 
   build() {
     Column() {
+      // 只有状态为已完成时 才有搜索
       if (this.queryParams.status === TaskTypeEnum.Finish) {
         this.getSearchForm()
       }
       HmList({
-        onLoad: async () => {
-          await this.getTaskList(true)
-        },
+        // 数据源
+        dataSource: this.taskListData,
+        // 是否结束
+        finished: this.allPage < this.queryParams.page,
+        // 下拉刷新函数
         onRefresh: async () => {
           await this.onRefresh()
         },
-        dataSource: this.taskListData,
-        renderItem: this.renderItem,
-        finished: this.allPage < this.queryParams.page,
-        finishText: '没啦没啦',
-        loadingText: '拼命加载中'
+        // 上拉加载函数
+        onLoad: async () => {
+          await this.getTaskList(true)
+        },
+        renderItem: this.renderItem, // 渲染结构
+        loadingText: '疯狂加载中',
+        finishText: '没啦没啦'
       })
     }
     .height('100%')
+
   }
 }
 

@@ -5,11 +5,11 @@
         "name": "default",
         "type": "HarmonyOS",
         "material": {
-          "storePassword": "0000001CF4101082892B8F973EDEB2FE07451344D72441884D1E328A1B7EFB8A28E9349ED3A3B31D71F5307C",
+          "storePassword": "0000001C40259C15177B7CBC1FB06EB40AAD91713FF54DF189C5328E16DB4AC03AD90E98ECF7E4016CB8BCC5",
           "certpath": "C:/Users/anwan/Desktop/LanYin/Key/fast.cer",
           "keyAlias": "fast",
-          "keyPassword": "0000001C6FFE6B7C6BB09EB4C4FFF9144668C931C1BCB590314370BC35B0775D91E8A9C69564B7413588859D",
-          "profile": "C:/Users/anwan/Desktop/LanYin/Key/fastDebugRelease.p7b",
+          "keyPassword": "0000001C9D1FB1366B81D12E0A3B619042C7FCA83B88A9E3B46F92B27A359F89D3FC5B9DBB2CBFA12408614B",
+          "profile": "C:/Users/anwan/Desktop/LanYin/Key/fastDebug.p7b",
           "signAlg": "SHA256withECDSA",
           "storeFile": "C:/Users/anwan/Desktop/LanYin/Key/fast.p12"
         }

@@ -6,6 +6,29 @@ export interface LoginForm {
   password: string;
 }
 
+export interface RegisterForm {
+  account: string; //用户名
+  password: string; //密码
+  key: string; //验证码key
+  code: string; //验证码答案
+}
+
+
+export interface UserInfo {
+  /** 头像 */
+  avatar: string;
+
+  /** 姓名 */
+  name: string;
+
+  /** 司机编号 */
+  number: string;
+
+  /** 手机号 */
+  phone: string;
+}
+
+
 export class LoginFormModel implements LoginForm {
   account: string = ''
   password: string = ''
@@ -16,26 +39,18 @@ export class LoginFormModel implements LoginForm {
   }
 }
 
-export interface UserInfo {
-  /**
-   * 头像
-   */
-  avatar: string;
+export class RegisterFormModel implements RegisterForm {
+  account: string = ''
+  password: string = ''
+  key: string = ''
+  code: string = ''
 
-  /**
-   * 姓名
-   */
-  name: string;
-
-  /**
-   * 司机编号
-   */
-  number: string;
-
-  /**
-   * 手机号
-   */
-  phone: string;
+  constructor(model: RegisterForm) {
+    this.account = model.account
+    this.password = model.password
+    this.key = model.key
+    this.code = model.code
+  }
 }
 
 export class UserInfoModel implements UserInfo {

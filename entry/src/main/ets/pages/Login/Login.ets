@@ -52,14 +52,19 @@ struct Login {
   build() {
     Column() {
       // 顶部标题
-      Text("小时达").fontColor($r('app.color.text_primary')).fontSize(18).height(25)
+      Text("兰因").fontColor($r('app.color.text_primary')).fontSize(18).height(25)
       // 账号登录
       Row() {
         Text('账号登录').fontColor($r('app.color.text_primary')).fontSize(24).fontWeight(FontWeight.Bold)
         Row() {
-          Text("账号登录").fontColor($r('app.color.primary')).fontSize(16).fontWeight(FontWeight.Bold)
+          Text("账号注册").fontColor($r('app.color.primary')).fontSize(16).fontWeight(FontWeight.Bold)
           Image($r("app.media.ic_angle")).width(10).height(10).margin({ left: 5 })
         }
+        .onClick(() => {
+          router.pushUrl({
+            url: 'pages/Register/Register'
+          })
+        })
       }
       .width('100%')
       .justifyContent(FlexAlign.SpaceBetween)

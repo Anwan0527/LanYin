@@ -1,8 +1,8 @@
 import router from '@ohos.router';
 
 import promptAction from '@ohos.promptAction';
-import { MessageItemModel, MessageQueryTypeModel } from '../../models';
-import { getMessage, readAllMessage, readMessage } from '../../api';
+import { MessageItemModel, MessageQueryTypeModel } from '../../../models/index';
+import { getMessage, readAllMessage, readMessage } from '../../../api/index';
 import { HmList } from '@hm/basic/Index';
 
 @Component
@@ -169,7 +169,7 @@ struct MessageTemplate {
       // 公告内容
       HmList({
         finished: this.allPage < this.queryParams.page,
-        dataSource: this.messageList,
+        dataSource: $messageList,
         onRefresh: async () => {
           await this.refreshData()
         },
